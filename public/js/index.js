@@ -1,5 +1,6 @@
 var socket = io();
 
+
 socket.on('connect', function () {
   console.log('Connected to server (Server is ONLINE)');
 // socket.emit('createMessage', { //Emitting from the client to server
@@ -13,26 +14,46 @@ socket.on('disconnect', function () {
 });
 
 socket.on('wMsg', function (msg) { //Listen the server
-  console.log(msg);
+  var formattedTime = moment(msg.createdAt).format('h:mm:ss a')
   var li = $('<li></li>');
-  li.text(`${msg.from}: ${msg.text}`)
+  li.text(`${formattedTime}-${msg.from}: ${msg.text}`)
   $('#messages').append(li);
 })
 
 socket.on('newLocationMessage', function (message) {
-  var li = $('<li></li>');
-  var a = $('<a target="_blank">My current location</a>')
-  li.text(`${message.from}: `)
-  a.attr('href',message.url)
-  li.append(a)
-  $('#messages').append(li);
+  var formattedTime = moment(message.createdAt).format('h:mm:ss a')
+  var template = $('#location-message-template').html()// call a script at index.html
+  var html = Mustache.render(template, {
+    location: message.url,
+    from: message.from,
+    createdAt: formattedTime
+  });
+  $('#messages').append(html);
+  $('a').attr('href',message.url)
+  // var li = $('<li></li>');
+  // var a = $('<a target="_blank">My current location</a>')
+  // li.text(`${formattedTime} ${message.from}: `)
+  // $('a').attr('href',message.url)
+  // li.append(a)
+  // $('#messages').append(li);
 })
 
 socket.on('newMsg', function (msg) { //Listen the server
-  console.log(msg);
-  var li = $('<li></li>');
-  li.text(`${msg.from}: ${msg.text}`)
-  $('#messages').append(li);
+  var formattedTime = moment(msg.createdAt).format('h:mm:ss a')
+  var template = $('#message-template').html()// call a script at index.html
+  var html = Mustache.render(template, {
+    text: msg.text,
+    from: msg.from,
+    createdAt: formattedTime
+  });
+  $('#messages').append(html);
+
+
+
+
+  // var li = $('<li></li>');
+  // li.text(`${formattedTime}-${msg.from}: ${msg.text}`)
+  // $('#messages').append(li);
 })
 
 // socket.emit('createMsg', { //Emitting from the client to server
@@ -58,7 +79,7 @@ $("#msg").on('submit',function (e) {
 var locationButton = $('#send-location');
 locationButton.on('click',function () {
   if (!navigator.geolocation) {
-    return alert('Geoloaction is not supported.')
+    return alert('Geolocation is not supported.')
   }
 
   locationButton.attr('disabled','disabled').text('Sending location...');
