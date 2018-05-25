@@ -14,7 +14,7 @@ const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');
 
-const {generateMessage} = require('./utils/message')
+const {generateMessage,generateLocation} = require('./utils/message')
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
 var app = express();
@@ -48,11 +48,15 @@ io.on('connection', (socket) => {
 
     console.log('Msg:',message);
     io.emit('newMsg', generateMessage(message.from,message.text));//...and then emit to all clients(address all connections)
-    fn('this is from the server');
+    fn();
+
     // socket.on('disconnect', () => {
     //   console.log('User was disconnected');
     // });
   });
+socket.on('createLocationMessage', (coords) => {
+  io.emit('newLocationMessage',generateLocation('Admin', coords.latitude, coords.longitude))
+})
 })
 
 server.listen(port, () => {
